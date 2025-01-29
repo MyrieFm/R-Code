@@ -1,0 +1,124 @@
+# Aufgabe 4: Visualisieren in R
+
+#Aufgabe 4.1
+# 1. Unzureichende Achsenbeschriftung d.h. die y-Achse fehlt
+# 2. Titel fehlt, was dazu führt, dass nicht sofort ersichtlich ist, was die Grafik erklären soll
+# 3. Ungünstig gewählte Farbwahl, da die Farben rot und grün von Farbblinden nicht unterschieden werden können
+
+#Werte zusammenstellen und noetige Pakete laden und umrechnen
+list.of.packages <- c("dplyr", "ggplot2", "plotly")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
+library(dplyr)
+library(ggplot2)
+library(plotly)
+
+file_path <- "~/Downloads/bike_sharing_data_(with_NAs).csv"
+
+if (!file.exists(file_path)) {
+  stop("Die Datei wurde nicht gefunden. Bitte überprüfe den Pfad.")
+}
+data <- read.csv(file_path)
+bike <- filter(data, group == 29)
+
+# Prüfen, ob `bike` leer ist
+if (nrow(bike) == 0) {
+  stop("Die Daten für die Gruppe 29 wurden nicht gefunden. Bitte überprüfe die Gruppenzuordnung.")
+}
+
+# Fehlende Werte imputieren 
+num_cols <- c("average_temperature", "precipitation", "windspeed", "count")
+for (col in num_cols) {
+  if (any(is.na(bike[[col]]))) {
+    bike[[col]][is.na(bike[[col]])] <- mean(bike[[col]], na.rm = TRUE)
+  }
+}
+
+bike$average_temperature_celsius <- (bike$average_temperature - 32) * 5/9
+if (!inherits(bike$date, "Date")) {
+  bike$date <- as.Date(bike$date, format="%Y-%m-%d")
+}
+
+
+# Aufgabe 4.2: 
+# Temperatur 
+ggplot(data = bike) + 
+  geom_point(aes(x = count, y = average_temperature_celsius)) +
+  labs(x = "Anzahl ausgeliehener Fahrräder", y = "Temperatur in °C", title = "Zusammenhang zwischen Fahrradausleihe und Temperatur")
+
+# Niederschlag 
+ggplot(data = bike) + 
+  geom_point(aes(x = count, y = precipitation), size = 0.8) +
+  labs(x = "Anzahl ausgeliehener Fahrräder", y = "Niederschlag in Zoll", title = "Zusammenhang zwischen Fahrradausleihe und Niederschlag")
+
+# Windgeschwindigkeit
+ggplot(data = bike) + 
+  geom_point(aes(x = count, y = windspeed), size = 1) +
+  labs(x = "Anzahl ausgeliehener Fahrräder", y = "Windgeschwindigkeit (km/h)", title = "Zusammenhang zwischen Fahrradausleihe und Windgeschwindigkeit")
+
+# Zeit 
+ggplot(data = bike) + 
+  geom_line(aes(x = date, y = count)) +
+  labs(x = "Zeit (Monat/Jahr)", y = "Anzahl ausgeliehener Fahrräder", title = "Zeitliche Entwicklung der Fahrradausleihe")
+
+# Aufgabe 4.3:
+bike_rainy <- filter(bike, precipitation > 0)
+bike_dry <- filter(bike, precipitation == 0)
+
+#Regentage
+ggplot(data = bike_rainy) + 
+  geom_point(aes(x = count, y = average_temperature_celsius), size = 0.8) +
+  labs(x = "Anzahl ausgeliehener Fahrräder", y = "Temperatur in °C", title = "Zusammenhang bei Regentagen")
+
+#trockene Tage
+ggplot(data = bike_dry) + 
+  geom_point(aes(x = count, y = average_temperature_celsius), size = 0.8) +
+  labs(x = "Anzahl ausgeliehener Fahrräder", y = "Temperatur in °C", title = "Zusammenhang bei trockenen Tagen")
+
+# Aufgabe 4.4: # 
+# Anzahl ausgeliehener Fahrräder
+ggplot(bike, aes(x = count)) +
+  geom_histogram(aes(y = after_stat(density)), binwidth = 4, fill = "purple", alpha = 0.5) +
+  xlab("Anzahl ausgeliehener Fahrräder") +
+  ylab("Dichte") +
+  ggtitle("Verteilung der Anzahl ausgeliehener Fahrräder")
+
+# Temperatur
+ggplot(bike, aes(x = average_temperature_celsius)) +
+  geom_histogram(aes(y = after_stat(density)), binwidth = 1, fill = "red", alpha = 0.5) +
+  xlab("Temperatur in °C") +
+  ylab("Dichte") +
+  ggtitle("Verteilung der Temperatur")
+
+# Niederschlag
+ggplot(bike, aes(x = precipitation)) +
+  geom_histogram(aes(y = after_stat(density)), binwidth = 0.5, fill = "blue", alpha = 0.5) +
+  xlab("Niederschlag in Zoll") +
+  ylab("Dichte") +
+  ggtitle("Verteilung des Niederschlags")
+
+# Windgeschwindigkeit
+ggplot(bike, aes(x = windspeed)) +
+  geom_histogram(aes(y = after_stat(density)), binwidth = 0.7, fill = "green", alpha = 0.5) +
+  xlab("Windgeschwindigkeit (km/h)") +
+  ylab("Dichte") +
+  ggtitle("Verteilung der Windgeschwindigkeit")
+
+# Aufgabe 4.5: 
+bike$season <- cut(as.numeric(format(bike$date, "%m")),
+                   breaks = c(0, 2, 5, 8, 11, 12),
+                   labels = c("Winter", "Frühling", "Sommer", "Herbst", "Winter"),
+                   include.lowest = TRUE)
+
+ggplot(bike, aes(x = count, fill = season)) +
+  geom_density(alpha = 0.5) +
+  xlab("Anzahl ausgeliehener Fahrräder") +
+  ylab("Dichte") +
+  ggtitle("Verteilung der Fahrradausleihe nach Jahreszeiten")
+
+# Aufgabe 4.6: 
+plot_ly(bike, x = ~average_temperature_celsius, y = ~windspeed, z = ~count,
+        type = "scatter3d", mode = "markers",
+        marker = list(size = 3, color = ~count, colorscale = "Viridis"))
+
