@@ -86,7 +86,7 @@ ggplot(bike, aes(x = count)) +
 
 # Temperatur
 ggplot(bike, aes(x = average_temperature_celsius)) +
-  geom_histogram(aes(y = after_stat(density)), binwidth = 1, fill = "red", alpha = 0.5) +
+  geom_histogram(aes(y = after_stat(density)), binwidth = 1, fill = "orange", alpha = 0.5) +
   xlab("Temperatur in °C") +
   ylab("Dichte") +
   ggtitle("Verteilung der Temperatur")
@@ -113,12 +113,19 @@ bike$season <- cut(as.numeric(format(bike$date, "%m")),
 
 ggplot(bike, aes(x = count, fill = season)) +
   geom_density(alpha = 0.5) +
+  scale_fill_manual(values = c("Winter" = "purple", 
+                               "Frühling" = "green", 
+                               "Sommer" = "blue", 
+                               "Herbst" = "yellow")) +
   xlab("Anzahl ausgeliehener Fahrräder") +
   ylab("Dichte") +
   ggtitle("Verteilung der Fahrradausleihe nach Jahreszeiten")
+
 
 # Aufgabe 4.6: 
 plot_ly(bike, x = ~average_temperature_celsius, y = ~windspeed, z = ~count,
         type = "scatter3d", mode = "markers",
         marker = list(size = 3, color = ~count, colorscale = "Viridis"))
+
+
 
