@@ -1,0 +1,196 @@
+R Code Abgabe 2 Comet Nr.3
+# Nummer 3.1
+### 8 Personen wichteln zu Weihnachten. Wie hoch ist die W´keit, dass niemand
+### sein eigenes Geschenk zieht?
+n<- 8 # Anzahl Geschenke
+my_geschenk <- 3 # Nummer unseres Geschenks
+all_geschenke <- 1:8 # alle Geschenke
+iterations <- 1000 # Anzahl Simulationen
+counter <- 0 # zählt positive Fälle
+for (i in 1:iterations) {
+  dates <- sample(all_geschenke, size = n, replace = FALSE)
+  if (sum(dates == all_geschenke) == 0) {
+    counter <- counter + 1
+  }
+}
+counter / iterations # simulierte Wahrscheinlichkeit
+1 - dbinom(0, size = n, prob = 1/8) # exakte Wahrscheinlichkeit
+# Nr.3.2
+### Wichtelproblem in eine Funktion umschreiben
+wichtel_unglueck <- function(n, k, iterationen = 1e6){
+  ## n = Anzahl an Personen, die beim Wichteln teilnehmen,
+  ## k = Anzahl unter den n Personen, die ihr eigenes Geschenk ziehen
+  ## iterations = 1e6 = Anzahl der Wiederholungen
+  counter <- 0
+  ## Anzahl positiver Fälle
+  for (i in 1:iterationen){
+    ## für i Wiederholungen zwischen 1 und 1e6
+    geschenke <- sample(1:n, n, replace = FALSE)
+    ## geschenke definiert zwischen 1 und der Anzahl der Teilnehmer, also n
+    ## replace = FALSE, da es ohne zurücklegen ist
+    eigene_geschenke <- sum(geschenke ==1:n)
+    ## gibt die Summe der Personen an, die ihr eigenes Geschenk gezogen haben
+    if (eigene_geschenke == k) {
+      ## überprüft, ob k Teilnehmer ihr eigenes Geschenk ziehen
+      counter <- counter + 1
+      ## wenn eigenes Geschenk gezogen wird, erhöht sich die Anzahl
+      ## positiver Fälle
+    }
+  }
+  return(counter/iterationen)
+  ## berechnet Anzahl an Personen die ihr eigenes Geschenk ziehen geteilt durch
+  ## Anzahl der Wiederholungen und gibt diese wieder
+}
+# Nr. 3.4 Testfälle, die die Funktion erfüllen muss
+## 1: es müssen mindestens 2 Personen teilnehmen
+## 2: n darf nicht kleiner sein als k
+## 3: es dürfen keine Geschenke übrig bleiben
+## 4: es dürfen keine negativen Zahlen existieren
+install.packages("testthat")
+library(testthat)
+wichtel_unglueck <- function(n, k, iterationen = 1e6){
+  if (k > n){
+    stop("k darf nicht größer sein als n")
+    ## Gibt Fehlerneldung als Output wenn k größer als n
+  }
+  counter <- 0
+  for (i in 1:iterationen){
+    geschenke <- sample(1:n, n, replace = FALSE)
+    test_that("es darf kein Geschenk übrig bleiben", {
+      expect_equal(length(geschenke),n)
+      ## Es darf kein Geschenk übrig bleiben, Anzahl an Geschenken muss mit
+      ## Anzahl an Personen übereinstimmen
+    })
+    test_that("es dürfen keine Negativen Zahlen auftreten",{
+      expect_false(n < 0)
+      ecpect_false(k < 0)
+      ## Es dürfen keine negativen Zahlen eingesetzt werden, es kann keine
+      ## negative Anzahl an Geschenken oder Teilnehmern vorliegen
+    })
+    test_that("es müssen mindestens 2 Personen teilnehmen", {
+      expect_true(n >= 2)
+      ## Es wird erwartet, dass mindestens 2 Personen teilnehmen
+    })
+    eigene_geschenke <- sum(geschenke ==1:n)
+    if (eigene_geschenke == k) {
+      counter <- counter + 1
+    }
+  }
+  return(counter/iterationen)
+}
+# Nr. 3.5
+## Daten einlesen
+data <- read.csv(
+  file = "~/Downloads/bike_sharing_data_(with_NAs).csv",
+  header = TRUE,
+  sep = ",",
+  dec =","
+)
+## Daten für Gruppe 29 filtern
+Gruppe29 <- subset(data, data[,1] == 29)
+head(Gruppe29)
+## es existieren NAs
+anyNA(Gruppe29)
+## überprüfen, in welcher Spalte und wo genau diese vorkommen
+is.na(Gruppe29$group)
+## keine NAs in group
+is.na(Gruppe29$station)
+## keine NAs in station
+is.na(Gruppe29$date)
+## keine NAs in date
+is.na(Gruppe29$day_of_year)
+## NAs in day_of_year
+is.na(Gruppe29$day_of_week)
+## NAs in day_of_week
+is.na(Gruppe29$month_of_year)
+## NAs in month_of_year
+is.na(Gruppe29$precipitation)
+## NAs in precipitation
+is.na(Gruppe29$windspeed)
+## NAs in windspeed
+is.na(Gruppe29$min_temperature)
+## NAs in min_temperature
+is.na(Gruppe29$average_temperature)
+## NAs in average_temperature
+is.na(Gruppe29$max_temperature)
+## NAs in max_temperature
+is.na(Gruppe29$count)
+## NAs in count
+### in welcher Zeile liegen die NAs?
+which(is.na(Gruppe29$day_of_year))
+## 216, 243
+which(is.na(Gruppe29$day_of_week))
+## 100, 218
+which(is.na(Gruppe29$month_of_year))
+## 185, 194
+which(is.na(Gruppe29$precipitation))
+## 285
+which(is.na(Gruppe29$windspeed))
+## 64
+which(is.na(Gruppe29$min_temperature))
+## 149
+which(is.na(Gruppe29$average_temperature))
+## 173
+which(is.na(Gruppe29$max_temperature))
+## 315
+which(is.na(Gruppe29$count))
+## 335
+### NAs durch Imputationsverfahren austauschen
+## Spalte day_of_year: Zeile ersetzen durch genauen Tage 216 und 243
+Gruppe29[216,4] <- 216
+Gruppe29[243,4] <- 243
+## Spalte day_of_week: Zeile ersetzen durch genauen Tag, 100=2 und 218=1
+Gruppe29[100,5] <- 2
+Gruppe29[218,5] <- 1
+## Spalte month_of_year: Zeile ersetzen durch genauen Monat, 185=7 und 194=7
+Gruppe29[185,6] <- 7
+Gruppe29[194,6] <- 7
+## Spalte precipitation: Zeile 285 ersetzen durch mean
+Gruppe29$precipitation <- as.numeric(Gruppe29$precipitation)
+mean(Gruppe29$precipitation, na.rm = TRUE)
+## =0.14
+Gruppe29[285,7] <- 0.14
+## Spalte windspeed: Zeile 64 ersetzen durch mean
+Gruppe29$windspeed <- as.numeric(Gruppe29$windspeed)
+mean(Gruppe29$windspeed,na.rm = TRUE)
+## =10.85
+Gruppe29[64,8] <- 10.85
+## Spalte min_temperature: Zeile 149 ersetzen durch mean
+mean(Gruppe29$min_temperature,na.rm = TRUE)
+## =48.93 = 49
+Gruppe29[149,9] <- 49
+## Spalte average_temperature: Zeile 173 ersetzen durch mean
+mean(Gruppe29$average_temperature,na.rm = TRUE)
+## =55.93 =56
+Gruppe29[173,10] <- 56
+## Spalte max_temperature: Zeile 315 ersetzen durch mean
+mean(Gruppe29$max_temperature,na.rm = TRUE)
+## =63.51 = 64
+Gruppe29[315,11] <- 64
+## Spalte count: Zeile 335 ersetzen durch mean
+mean(Gruppe29$count,na.rm = TRUE)
+## =98.67857, ersetzen durch 99, da nur ganze Fahrräder existieren
+Gruppe29[335,12] <- 99
+anyNA(Gruppe29)
+## FALSE, keine NAs mehr im Datensatz
+#### Liegen Datenanomalien vor?
+Gruppe29$windspeed < 0
+## TRUE, es kann aber keine negative Windgeschwindigkeit geben
+## Wert aus Datensatz entfernen
+Gruppe29$precipitation < 0
+## TRUE, es kann keinen negativen Niederschlagswert geben, entweder es regnet
+## oder es regnet nicht
+## Wert aus Datensatz entfernen
+Gruppe29$count < 0
+## TRUE, es kann keine negative Zahl an geliehenen Fahrrädern geben
+## Wert aus Datensatz entfernen
+#### Fahrenheit in Celsius für Spalten 9,10 und 11
+Gruppe29$min_temperature <- (Gruppe29$min_temperature - 32) * 5/9
+Gruppe29$average_temperature <- (Gruppe29$average_temperature - 32) * 5/9
+Gruppe29$max_temperature <- (Gruppe29$max_temperature - 32) * 5/9
+#### Monat mit höchster Gesamtzahl ausgeliehener Fahrräder berechnen
+mean(Gruppe29$count[data$month == 1], na.rm = TRUE)
+mean(Gruppe29$count[data$month == 2], na.rm = TRUE)
+## für jeden Monat durchführen
+## Der Monat mit den meist geliehehen Fahrrädern ist der Oktober
+## aufgerundet wurden im Schnitt 130 Fahrräder verliehen
