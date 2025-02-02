@@ -48,6 +48,8 @@ ggplot(data = bike) +
   labs(x = "Anzahl ausgeliehener Fahrräder", y = "Temperatur in °C", title = "Zusammenhang zwischen Fahrradausleihe und Temperatur")
 
 # Niederschlag 
+bike <- bike %>% filter_if(is.numeric, all_vars(. >= 0))
+
 ggplot(data = bike) + 
   geom_point(aes(x = count, y = precipitation), size = 0.8) +
   labs(x = "Anzahl ausgeliehener Fahrräder", y = "Niederschlag in Zoll", title = "Zusammenhang zwischen Fahrradausleihe und Niederschlag")
@@ -79,28 +81,28 @@ ggplot(data = bike_dry) +
 # Aufgabe 4.4: # 
 # Anzahl ausgeliehener Fahrräder
 ggplot(bike, aes(x = count)) +
-  geom_histogram(aes(y = after_stat(density)), binwidth = 4, fill = "purple", alpha = 0.5) +
+  geom_histogram(aes(y = after_stat(density)), binwidth = 4, fill = "black", alpha = 0.5) +
   xlab("Anzahl ausgeliehener Fahrräder") +
   ylab("Dichte") +
   ggtitle("Verteilung der Anzahl ausgeliehener Fahrräder")
 
 # Temperatur
 ggplot(bike, aes(x = average_temperature_celsius)) +
-  geom_histogram(aes(y = after_stat(density)), binwidth = 1, fill = "orange", alpha = 0.5) +
+  geom_histogram(aes(y = after_stat(density)), binwidth = 1, fill = "black", alpha = 0.5) +
   xlab("Temperatur in °C") +
   ylab("Dichte") +
   ggtitle("Verteilung der Temperatur")
 
 # Niederschlag
 ggplot(bike, aes(x = precipitation)) +
-  geom_histogram(aes(y = after_stat(density)), binwidth = 0.5, fill = "blue", alpha = 0.5) +
+  geom_histogram(aes(y = after_stat(density)), binwidth = 0.5, fill = "black", alpha = 0.5) +
   xlab("Niederschlag in Zoll") +
   ylab("Dichte") +
   ggtitle("Verteilung des Niederschlags")
 
 # Windgeschwindigkeit
 ggplot(bike, aes(x = windspeed)) +
-  geom_histogram(aes(y = after_stat(density)), binwidth = 0.7, fill = "green", alpha = 0.5) +
+  geom_histogram(aes(y = after_stat(density)), binwidth = 0.7, fill = "black", alpha = 0.5) +
   xlab("Windgeschwindigkeit (km/h)") +
   ylab("Dichte") +
   ggtitle("Verteilung der Windgeschwindigkeit")
@@ -126,6 +128,3 @@ ggplot(bike, aes(x = count, fill = season)) +
 plot_ly(bike, x = ~average_temperature_celsius, y = ~windspeed, z = ~count,
         type = "scatter3d", mode = "markers",
         marker = list(size = 3, color = ~count, colorscale = "Viridis"))
-
-
-
