@@ -1,20 +1,33 @@
 R Code Abgabe 2 Comet Nr.3
+
 # Nummer 3.1
 ### 8 Personen wichteln zu Weihnachten. Wie hoch ist die W´keit, dass niemand
 ### sein eigenes Geschenk zieht?
-n<- 8 # Anzahl Geschenke
-my_geschenk <- 3 # Nummer unseres Geschenks
-all_geschenke <- 1:8 # alle Geschenke
-iterations <- 1000 # Anzahl Simulationen
+n <- 8 # Anzahl der Personen
+all_geschenke <- 1:n # alle Geschenke
+iterations <- 1000 # Anzahl der Simulationen
 counter <- 0 # zählt positive Fälle
+
+# Simulation
 for (i in 1:iterations) {
   dates <- sample(all_geschenke, size = n, replace = FALSE)
   if (sum(dates == all_geschenke) == 0) {
     counter <- counter + 1
   }
 }
-counter / iterations # simulierte Wahrscheinlichkeit
-1 - dbinom(0, size = n, prob = 1/8) # exakte Wahrscheinlichkeit
+
+simulierte_wkeit <- counter / iterations # simulierte Wahrscheinlichkeit
+cat("Simulierte Wahrscheinlichkeit:", simulierte_wkeit, "\n")
+
+# Exakte Wahrscheinlichkeit (Derangement)
+derangement_prob <- function(n) {
+  return(factorial(n) / (exp(1) * factorial(n)))
+}
+
+exakte_wkeit <- derangement_prob(n)
+cat("Exakte Wahrscheinlichkeit:", exakte_wkeit, "\n")
+
+
 # Nr.3.2
 ### Wichtelproblem in eine Funktion umschreiben
 wichtel_unglueck <- function(n, k, iterationen = 1e6){
@@ -30,7 +43,7 @@ wichtel_unglueck <- function(n, k, iterationen = 1e6){
     ## replace = FALSE, da es ohne zurücklegen ist
     eigene_geschenke <- sum(geschenke ==1:n)
     ## gibt die Summe der Personen an, die ihr eigenes Geschenk gezogen haben
-    if (eigene_geschenke == k) {
+    if (eigene_geschenke <= k) {
       ## überprüft, ob k Teilnehmer ihr eigenes Geschenk ziehen
       counter <- counter + 1
       ## wenn eigenes Geschenk gezogen wird, erhöht sich die Anzahl
@@ -41,6 +54,11 @@ wichtel_unglueck <- function(n, k, iterationen = 1e6){
   ## berechnet Anzahl an Personen die ihr eigenes Geschenk ziehen geteilt durch
   ## Anzahl der Wiederholungen und gibt diese wieder
 }
+
+
+#Nr. 3.3 Dokumenattion wurde ergänzt 
+
+
 # Nr. 3.4 Testfälle, die die Funktion erfüllen muss
 ## 1: es müssen mindestens 2 Personen teilnehmen
 ## 2: n darf nicht kleiner sein als k
@@ -48,36 +66,42 @@ wichtel_unglueck <- function(n, k, iterationen = 1e6){
 ## 4: es dürfen keine negativen Zahlen existieren
 install.packages("testthat")
 library(testthat)
-wichtel_unglueck <- function(n, k, iterationen = 1e6){
-  if (k > n){
-    stop("k darf nicht größer sein als n")
-    ## Gibt Fehlerneldung als Output wenn k größer als n
-  }
+wichtel_unglueck <- function(n, k, iterationen = 1e6) {
+  if (n < 2) stop("Es müssen mindestens 2 Personen teilnehmen.")
+  if (k < 0) stop("k darf nicht negativ sein.")
+  if (k > n) stop("k darf nicht größer sein als n.")
+  if (iterationen <= 0) stop("Die Anzahl der Iterationen muss positiv sein.")
+  
   counter <- 0
-  for (i in 1:iterationen){
+  
+  geschenke <- sample(1:n, n, replace = FALSE)
+  
+  test_that("es darf kein Geschenk übrig bleiben", {
+    expect_equal(length(geschenke), n)
+  })
+  test_that("es dürfen keine negativen Zahlen auftreten", {
+    expect_false(n < 0)
+    expect_false(k < 0)
+    expect_false(iterationen < 0)
+  })
+  test_that("es müssen mindestens 2 Personen teilnehmen", {
+    expect_true(n >= 2)
+  })
+  test_that("k darf nicht größer sein als n", {
+    expect_true(k <= n)
+  })
+  
+  for (i in 1:iterationen) {
     geschenke <- sample(1:n, n, replace = FALSE)
-    test_that("es darf kein Geschenk übrig bleiben", {
-      expect_equal(length(geschenke),n)
-      ## Es darf kein Geschenk übrig bleiben, Anzahl an Geschenken muss mit
-      ## Anzahl an Personen übereinstimmen
-    })
-    test_that("es dürfen keine Negativen Zahlen auftreten",{
-      expect_false(n < 0)
-      ecpect_false(k < 0)
-      ## Es dürfen keine negativen Zahlen eingesetzt werden, es kann keine
-      ## negative Anzahl an Geschenken oder Teilnehmern vorliegen
-    })
-    test_that("es müssen mindestens 2 Personen teilnehmen", {
-      expect_true(n >= 2)
-      ## Es wird erwartet, dass mindestens 2 Personen teilnehmen
-    })
-    eigene_geschenke <- sum(geschenke ==1:n)
-    if (eigene_geschenke == k) {
+    eigene_geschenke <- sum(geschenke == 1:n)
+    
+    if (eigene_geschenke <= k) {
       counter <- counter + 1
     }
   }
-  return(counter/iterationen)
+  return(counter / iterationen)
 }
+
 # Nr. 3.5
 ## Daten einlesen
 data <- read.csv(
